@@ -5,7 +5,9 @@ import ffmpeg from '@motion-canvas/ffmpeg';
 // noinspection JSUnusedGlobalSymbols
 export default defineConfig({
   plugins: [
-    motionCanvas(),
+    motionCanvas({
+      project: ['./src/ep*/ep*.project.ts']
+    }),
     ffmpeg(),
   ],
 });
