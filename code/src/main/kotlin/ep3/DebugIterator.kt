@@ -9,12 +9,16 @@ fun main() {
     DebugProbes.ignoreCoroutinesWithEmptyContext = false
 
     val iterator = iterator {
-        println("2: " + DebugProbes.dumpCoroutinesInfo())
+        println("before yield " + DebugProbes.dumpCoroutinesInfo())
         yield(1)
+        println("no more " + DebugProbes.dumpCoroutinesInfo())
     }
-    println("1: " + DebugProbes.dumpCoroutinesInfo())
-    iterator.next()
-    println("3: " + DebugProbes.dumpCoroutinesInfo())
-    iterator.hasNext()
-    println("4: " + DebugProbes.dumpCoroutinesInfo())
+
+    println("before iterator start " + DebugProbes.dumpCoroutinesInfo())
+    while (iterator.hasNext()) {
+        println("before calling next " + DebugProbes.dumpCoroutinesInfo())
+        iterator.next()
+        println("after calling next " + DebugProbes.dumpCoroutinesInfo())
+    }
+    println("after iterator end " + DebugProbes.dumpCoroutinesInfo())
 }

@@ -17,9 +17,9 @@ fun main() {
         println("no more")
     }
 
-    println(ownIterator.next())
-    println(ownIterator.next())
-    println(ownIterator.hasNext())
+    while (ownIterator.hasNext()) {
+        println(ownIterator.next())
+    }
 }
 
 private fun <T> ownIterator(block: suspend OwnIteratorScope<T>.() -> Unit): Iterator<T> {
@@ -51,7 +51,6 @@ private class OwnIteratorScope<T> : AbstractIterator<T>(), Continuation<Unit> {
     }
 
     override fun resumeWith(result: Result<Unit>) {
-        result.getOrThrow()
         done()
         isDone = true
     }

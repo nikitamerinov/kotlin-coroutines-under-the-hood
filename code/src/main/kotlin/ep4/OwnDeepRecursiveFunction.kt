@@ -1,31 +1,15 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package ep4
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlin.coroutines.Continuation
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
 import kotlin.coroutines.intrinsics.startCoroutineUninterceptedOrReturn
 import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
-import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
 import kotlin.coroutines.resume
 
 fun main() {
-    val referenceSum = DeepRecursiveFunction<List<Int>, Int> { list ->
-        if (list.isEmpty()) {
-            return@DeepRecursiveFunction 0
-        }
-
-        val sumRest = callRecursive(list.subList(1, list.size))
-        return@DeepRecursiveFunction list[0] + sumRest
-    }
-
-    println(referenceSum(listOf(1, 2, 3)))
-
-    println("===")
-
     val sum = OwnDeepRecursiveFunction<List<Int>, Int> { list ->
-        println("list: $list")
         if (list.isEmpty()) {
             return@OwnDeepRecursiveFunction 0
         }
@@ -37,9 +21,13 @@ fun main() {
     println(sum(listOf(1, 2, 3)))
 }
 
-class OwnDeepRecursiveFunctionScope<T, R>(val block: suspend OwnDeepRecursiveFunctionScope<T, R>.(T) -> R) {
-    private var continuation: Continuation<R>? = null
-    private var param: T? = null
+
+private class OwnDeepRecursiveFunctionScope<T, R>(
+    private val block: suspend OwnDeepRecursiveFunctionScope<T, R>.(T) -> R,
+    private var param: T
+): Continuation<R> {
+    private var continuation: Continuation<R> = this
+    private var finalResult: R? = null
 
     suspend fun callRecursive(param: T): R {
         this.param = param
@@ -49,30 +37,31 @@ class OwnDeepRecursiveFunctionScope<T, R>(val block: suspend OwnDeepRecursiveFun
         }
     }
 
-    private fun runLoop(param: T): R {
-        this.param = param
-        var final: R? = null
-        val cont = if (continuation == null) Continuation(EmptyCoroutineContext){ r -> final = r.getOrThrow() } else continuation!!
-        block.startCoroutineUninterceptedOrReturn(this, this.param!!, cont)
-        block.startCoroutineUninterceptedOrReturn(this, this.param!!, this.continuation!!)
-        block.startCoroutineUninterceptedOrReturn(this, this.param!!, this.continuation!!)
-        val r = block.startCoroutineUninterceptedOrReturn(this, this.param!!, this.continuation!!)
-//        println(r)
-        this.continuation!!.resume(r as R)
-        return final as R
+    @Suppress("UNCHECKED_CAST")
+    fun runCallLoop(): R {
+        while (true) {
+            val callResult = block.startCoroutineUninterceptedOrReturn(this, param, continuation)
+            if (callResult !== COROUTINE_SUSPENDED) {
+                continuation.resume(callResult as R)
+                return finalResult as R
+            }
+        }
     }
 
+    override val context: CoroutineContext = EmptyCoroutineContext
+
+    override fun resumeWith(result: Result<R>) {
+        finalResult = result.getOrThrow()
+    }
+}
+
+private class OwnDeepRecursiveFunction<T, R>(private val block: suspend OwnDeepRecursiveFunctionScope<T, R>.(T) -> R) {
     operator fun invoke(param: T): R {
-        return runLoop(param)
+        return OwnDeepRecursiveFunctionScope(block, param).runCallLoop()
     }
 }
 
-fun <T, R> OwnDeepRecursiveFunction(block: suspend OwnDeepRecursiveFunctionScope<T, R>.(T) -> R): OwnDeepRecursiveFunctionScope<T, R> {
-    val scope = OwnDeepRecursiveFunctionScope<T, R>(block)
-    return scope
-}
-
-fun <R, P, T> (suspend R.(P) -> T).startCoroutineUninterceptedOrReturn(
+private fun <R, P, T> (suspend R.(P) -> T).startCoroutineUninterceptedOrReturn(
     receiver: R, param: P, completion: Continuation<T>
 ): Any? {
     val f: (suspend R.() -> T) = { this@startCoroutineUninterceptedOrReturn(this, param) }

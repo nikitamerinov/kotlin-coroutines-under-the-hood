@@ -6,16 +6,13 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import kotlin.coroutines.*
 import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
+import kotlin.coroutines.intrinsics.startCoroutineUninterceptedOrReturn
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
 
 @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
-suspend fun main() {
-    suspendCoroutine { continuation ->
-        continuation.resume(Unit)
-        continuation.resume(Unit)
-        continuation.resume(Unit)
-    }
-    println(1)
+fun main() {
+    val r = ::test.startCoroutineUninterceptedOrReturn(Continuation(EmptyCoroutineContext) {})
+    println(r)
 }
 
 
