@@ -1,7 +1,7 @@
 package ep4
 
 fun main() {
-    val referenceSum = DeepRecursiveFunction<List<Int>, Int> { list ->
+    val sum = DeepRecursiveFunction<List<Int>, Int> { list ->
         if (list.isEmpty()) {
             return@DeepRecursiveFunction 0
         }
@@ -10,5 +10,5 @@ fun main() {
         return@DeepRecursiveFunction list[0] + sumRest
     }
 
-    println(referenceSum(listOf(1, 2, 3)))
+    println(sum(listOf(1, 2, 3)))
 }

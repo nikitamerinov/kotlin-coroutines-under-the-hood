@@ -1,19 +1,28 @@
 import {makeScene2D, Txt} from '@motion-canvas/2d';
-import {createRef, Direction, Origin, slideTransition, waitFor} from '@motion-canvas/core';
-import {Caption, Text} from '../../common';
+import {createRef, DEFAULT, Direction, slideTransition, waitUntil} from '@motion-canvas/core';
+import {Caption} from '../../common';
 
 export default makeScene2D(function* (view) {
   const title = createRef<Txt>();
+  const next = createRef<Txt>();
 
   view.add(
     <>
-      <Caption ref={title} text={'Next'} />
-      <Caption text={'Coroutine fundamentals'} />
+      <Caption ref={title} text={'Next episode'} textAlign={'center'}/>
+      {/*<Caption ref={next} text={'Coroutine fundamentals'} opacity={0}/>*/}
     </>
   );
-  title().top(view.getOriginDelta(Origin.Top).addY(90));
 
   yield* slideTransition(Direction.Right);
 
-  yield* waitFor(1);
+  yield* waitUntil('start');
+
+  title().size(title().size());
+  yield* title().text('', 1);
+  title().size(DEFAULT);
+  yield* title().text('Coroutine fundamentals', 1);
+
+
+
+  yield* waitUntil('end');
 });

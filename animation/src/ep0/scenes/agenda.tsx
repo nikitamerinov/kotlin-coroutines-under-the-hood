@@ -8,25 +8,26 @@ export default makeScene2D(function* (view) {
   const textLines = createRefArray<Txt>()
 
   view.add(
-    <Layout layout size={'100%'} padding={[90, 120, 200]} direction={'column'} gap={100} alignItems={'center'}>
-      <Node ref={titleWrapper}>
-        <Caption ref={title} text={'Introduction to the series'} />
-      </Node>
-      <Layout direction={'column'} grow={1} justifyContent={'space-around'}>
-        <Text ref={textLines} text={'What topics will be covered'} />
-        <Text ref={textLines} text={'What will not be covered'} />
-        <Text ref={textLines} text={'Additional notes'} />
-      </Layout>
-    </Layout>
+    <>
+      <Caption ref={title} text={'Introduction to the series'} />
+      {/*<Layout layout size={'100%'} padding={150} direction={'column'} alignItems={'center'} justifyContent={'center'}>*/}
+        <Layout layout direction={'column'} gap={150}>
+          <Text ref={textLines} text={'What topics will be covered'} />
+          <Text ref={textLines} text={'What will not be covered'} />
+          <Text ref={textLines} text={'Additional notes'} />
+        </Layout>
+      {/*</Layout>*/}
+    </>
   );
 
-  prepare(titleWrapper(), title(), textLines);
+  prepare(textLines);
 
   yield* slideTransition(Direction.Right);
 
   yield* waitUntil('start');
 
-  yield* titleWrapper().y(0, 1.5);
+  title().size(title().size());
+  yield* title().text('', 1);
 
   for (const textLine of textLines) {
     const text = textLine.text();
@@ -34,16 +35,13 @@ export default makeScene2D(function* (view) {
     textLine.text('');
     textLine.opacity(1);
     yield textLine.text(text, 1);
-    yield* waitFor(0.5);
   }
+
 
   yield* waitUntil('end');
 });
 
-function prepare(titleWrapper: Node, title: Txt, textLines: Txt[]) {
-  const titleDeltaFromCenter = title.position();
-  titleWrapper.position.add(titleDeltaFromCenter.flipped);
-
+function prepare(textLines: Txt[]) {
   for (const textLine of textLines) {
     textLine.opacity(0);
   }

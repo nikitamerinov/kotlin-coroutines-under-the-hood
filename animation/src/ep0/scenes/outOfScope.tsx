@@ -1,27 +1,70 @@
-import {makeScene2D, Txt} from '@motion-canvas/2d';
-import {createRef, Direction, Origin, slideTransition, waitFor} from '@motion-canvas/core';
+import {Layout, makeScene2D, Txt} from '@motion-canvas/2d';
+import {
+  all,
+  createRef,
+  createRefArray,
+  DEFAULT,
+  Direction,
+  slideTransition,
+  useLogger,
+  waitUntil
+} from '@motion-canvas/core';
 import {Caption, Text} from '../../common';
 
 export default makeScene2D(function* (view) {
   const title = createRef<Txt>();
-
-  const list = `- What are coroutines?
-- How to start coroutine?
-- What is structured concurrency?
-- What are dispatchers?
-- How to use flow?
-- ...
-- Questions 'What is it' or 'How to use it'`;
+  const textLines = createRefArray<Txt>();
+  const link = createRef<Txt>();
 
   view.add(
     <>
       <Caption ref={title} text={'Out of scope'} />
-      <Text text={list} lineHeight={80} />
+      {/*<Layout layout size={'100%'} padding={[90, 120, 200]} direction={'column'} gap={100} alignItems={'center'}*/}
+      {/*        textWrap={true}>*/}
+      <Layout layout direction={'column'}>
+        <Layout layout direction={'column'} gap={100}>
+          <Text ref={textLines} text={'What are coroutines and how to use them'} />
+          <Text ref={textLines} text={'What is structured concurrency'} />
+          <Text ref={textLines} text={'What are dispatchers'} />
+          <Text ref={textLines} text={'How to use channels and flows'} />
+        </Layout>
+        <Text ref={link} fill={'#548AF7'} text={'https://kotlinlang.org/docs/coroutines-guide.html'} opacity={0}
+              marginTop={0} />
+      </Layout>
+      {/*</Layout>*/}
     </>
   );
-  title().top(view.getOriginDelta(Origin.Top).addY(90));
+  const h = link().height();
+  const text = link().text();
+  link().text('');
+  link().height(0);
+  for (const textLine of textLines) {
+    textLine.opacity(0);
+  }
 
   yield* slideTransition(Direction.Right);
 
-  yield* waitFor(1);
+  yield* waitUntil('start');
+
+  title().size(title().size());
+  yield* title().text('', 0.5);
+
+  for (const textLine of textLines) {
+    const text = textLine.text();
+    textLine.size(textLine.size());
+    textLine.text('');
+    textLine.opacity(1);
+    yield textLine.text(text, 1);
+  }
+
+  yield* waitUntil('link');
+  yield* all(
+    link().height(h, 1),
+    link().margin.top(100, 1)
+  );
+
+  link().opacity(1);
+  yield* link().text(text, 1);
+
+  yield* waitUntil('end');
 });

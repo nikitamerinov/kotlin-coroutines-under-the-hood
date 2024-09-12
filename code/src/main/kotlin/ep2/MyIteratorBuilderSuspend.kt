@@ -9,7 +9,7 @@ import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 import kotlin.coroutines.resume
 
 fun main() {
-    val ownIterator = ownIterator {
+    val iterator = myIterator {
         println("before 1")
         yield(1)
         println("before 2")
@@ -17,18 +17,18 @@ fun main() {
         println("no more")
     }
 
-    while (ownIterator.hasNext()) {
-        println(ownIterator.next())
+    while (iterator.hasNext()) {
+        println(iterator.next())
     }
 }
 
-private fun <T> ownIterator(block: suspend OwnIteratorScope<T>.() -> Unit): Iterator<T> {
-    val iterator = OwnIteratorScope<T>()
+fun <T> myIterator(block: suspend MyIteratorBuilderScope<T>.() -> Unit): Iterator<T> {
+    val iterator = MyIteratorBuilderScope<T>()
     iterator.continuation = block.createCoroutineUnintercepted(receiver = iterator, completion = iterator)
     return iterator
 }
 
-private class OwnIteratorScope<T> : AbstractIterator<T>(), Continuation<Unit> {
+class MyIteratorBuilderScope<T> : AbstractIterator<T>(), Continuation<Unit> {
     private var isDone: Boolean = false
     private var value: T? = null
     var continuation: Continuation<Unit>? = null
@@ -44,14 +44,15 @@ private class OwnIteratorScope<T> : AbstractIterator<T>(), Continuation<Unit> {
     override fun computeNext() {
         continuation!!.resume(Unit)
 
-        if (!isDone) {
+        if (isDone) {
+            done()
+        } else {
             @Suppress("UNCHECKED_CAST")
             setNext(value as T)
         }
     }
 
     override fun resumeWith(result: Result<Unit>) {
-        done()
         isDone = true
     }
 

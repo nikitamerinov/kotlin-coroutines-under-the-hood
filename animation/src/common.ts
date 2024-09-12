@@ -8,7 +8,3 @@ export const Text = withDefaults(Txt, {
 export const Caption = withDefaults(Text, {
   fontSize: 80
 })
-
-export const captionStyle = {
-  fontSize: 80
-};

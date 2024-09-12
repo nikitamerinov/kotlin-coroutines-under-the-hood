@@ -2,8 +2,16 @@
   "version": 0,
   "timeEvents": [
     {
+      "name": "start",
+      "targetTime": 4.221862348178138
+    },
+    {
+      "name": "switch text",
+      "targetTime": 33.66018893387314
+    },
+    {
       "name": "end",
-      "targetTime": 17.088860350795976
+      "targetTime": 54.24648518210502
     }
   ],
   "seed": 3315580468

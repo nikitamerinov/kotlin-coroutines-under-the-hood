@@ -1,7 +1,7 @@
 package ep1
 
 fun main() {
-    val referenceIterator = iterator {
+    val iterator = iterator {
         println("before 1")
         yield(1)
         println("before 2")
@@ -9,7 +9,7 @@ fun main() {
         println("no more")
     }
 
-    while (referenceIterator.hasNext()) {
-        println(referenceIterator.next())
+    while (iterator.hasNext()) {
+        println(iterator.next())
     }
 }

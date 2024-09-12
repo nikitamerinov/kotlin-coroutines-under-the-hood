@@ -1,5 +1,5 @@
 import {makeScene2D} from '@motion-canvas/2d';
-import {Direction, slideTransition, waitFor} from '@motion-canvas/core';
+import {Direction, slideTransition, waitFor, waitUntil} from '@motion-canvas/core';
 import {Caption} from '../../common';
 
 export default makeScene2D(function* (view) {
@@ -11,5 +11,5 @@ export default makeScene2D(function* (view) {
 
   yield* slideTransition(Direction.Right);
 
-  yield* waitFor(1);
+  yield* waitUntil('end');
 });

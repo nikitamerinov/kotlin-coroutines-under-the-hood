@@ -1,5 +1,6 @@
 package ep3
 
+import ep2.myIterator
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.debug.DebugProbes
 
@@ -8,7 +9,7 @@ fun main() {
     DebugProbes.install()
     DebugProbes.ignoreCoroutinesWithEmptyContext = false
 
-    val iterator = iterator {
+    val iterator = myIterator {
         println("before yield " + DebugProbes.dumpCoroutinesInfo())
         yield(1)
         println("no more " + DebugProbes.dumpCoroutinesInfo())

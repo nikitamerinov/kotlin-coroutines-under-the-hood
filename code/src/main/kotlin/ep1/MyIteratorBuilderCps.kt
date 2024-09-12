@@ -1,7 +1,7 @@
 package ep1
 
 fun main() {
-    val ownIterator = ownIterator { onComplete ->
+    val iterator = myIterator { onComplete ->
         println("before 1")
         yield(1) {
             println("before 2")
@@ -12,25 +12,25 @@ fun main() {
         }
     }
 
-    while (ownIterator.hasNext()) {
-        println(ownIterator.next())
+    while (iterator.hasNext()) {
+        println(iterator.next())
     }
 }
 
-private typealias OwnContinuation = () -> Unit
+typealias MyContinuation = () -> Unit
 
-private fun <T> ownIterator(block: OwnIteratorScope<T>.(OwnContinuation) -> Unit): Iterator<T> {
-    val iterator = OwnIteratorScope<T>()
+fun <T> myIterator(block: MyIteratorBuilderScope<T>.(MyContinuation) -> Unit): Iterator<T> {
+    val iterator = MyIteratorBuilderScope<T>()
     iterator.continuation = { iterator.block(iterator) }
     return iterator
 }
 
-private class OwnIteratorScope<T> : AbstractIterator<T>(), OwnContinuation {
+class MyIteratorBuilderScope<T> : AbstractIterator<T>(), MyContinuation {
     private var isDone = false
     private var value: T? = null
-    var continuation: OwnContinuation? = null
+    var continuation: MyContinuation? = null
 
-    fun yield(value: T, continuation: OwnContinuation) {
+    fun yield(value: T, continuation: MyContinuation) {
         this.value = value
         this.continuation = continuation
     }
@@ -38,14 +38,15 @@ private class OwnIteratorScope<T> : AbstractIterator<T>(), OwnContinuation {
     override fun computeNext() {
         continuation!!()
 
-        if (!isDone) {
+        if (isDone) {
+            done()
+        } else {
             @Suppress("UNCHECKED_CAST")
             setNext(value as T)
         }
     }
 
     override fun invoke() {
-        done()
         isDone = true
     }
 }
